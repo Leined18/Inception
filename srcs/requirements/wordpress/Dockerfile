@@ -15,10 +15,15 @@ RUN  curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cl
     && mv wp-cli.phar /usr/local/bin/wp
 
 
-COPY tools/entrypoint.sh /entrypoint.sh
+
+COPY /requirements/wordpress/tools/wp-config.php /tmp/wp-config.php
+COPY /requirements/wordpress/tools/entrypoint.sh /entrypoint.sh
+
 RUN chmod +x /entrypoint.sh
 
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["/usr/sbin/php-fpm8.2", "-F"]
+
+ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
 
 EXPOSE 9000
+
+CMD ["/usr/sbin/php-fpm8.2", "-F"]

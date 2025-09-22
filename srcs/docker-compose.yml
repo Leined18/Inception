@@ -1,0 +1,51 @@
+#version: '3.1'
+
+services:
+ wordpress:
+    build:
+      context: .
+      dockerfile: ./requirements/wordpress/Dockerfile
+    container_name: wordpress
+    restart: always
+    env_file:
+      - ./.env
+    volumes:
+      - ${HOME}/data/wordpress:/var/www/html
+    networks:
+      - wordpress_network
+    ports:
+      - "80:9000"
+    depends_on:
+      db: 
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "pgrep", "php-fpm"]
+      interval: 30s
+      retries: 3
+      start_period: 5s
+      timeout: 5s
+    # logging: # Configuración de logs
+    #   driver: "gelf"
+    #   options:
+    #     gelf-address: "udp://127.0.0.1:5044"
+ db:
+    build:
+      context: .
+      dockerfile: ./requirements/mariadb/Dockerfile
+    container_name: mariadb
+    restart: always
+    env_file:
+      - ./.env
+    networks:
+      - wordpress_network
+    volumes:
+      - ${HOME}/data/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+
+networks:
+  wordpress_network:
+    name: wordpress_network
+    driver: bridge
