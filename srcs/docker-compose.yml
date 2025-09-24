@@ -1,6 +1,24 @@
 #version: '3.1'
 
 services:
+ nginx:
+    build:
+      context: .
+      dockerfile: ./requirements/nginx/Dockerfile
+    container_name: nginx
+    restart: always
+    env_file:
+      - ./.env
+    ports:
+      - "443:443"
+    volumes:
+      - ${HOME}/data/wordpress:/var/www/html
+    depends_on:
+      wordpress:
+        condition: service_healthy
+        restart: true
+    networks:
+      - wordpress_network
  wordpress:
     build:
       context: .
@@ -13,8 +31,6 @@ services:
       - ${HOME}/data/wordpress:/var/www/html
     networks:
       - wordpress_network
-    ports:
-      - "80:9000"
     depends_on:
       db: 
         condition: service_healthy
