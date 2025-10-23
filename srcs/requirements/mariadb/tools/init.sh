@@ -1,21 +1,21 @@
 #!/bin/bash
-set -eo pipefail #check
+set -eo pipefail
 
 # Expandir variables de entorno en el archivo .sql
-envsubst < /init.sql > /tmp/init_expanded.sql #check
+envsubst < /init.sql > /tmp/init_expanded.sql
 #echo "Archivo SQL con variables de entorno expandido:"
-#cat /tmp/init_expanded.sql 
+#cat /tmp/init_expanded.sql
 
 
 
 
 # Si el directorio de datos está vacío, inicializa MariaDB
 if [ ! -d "$MYSQL_DATA_DIR/mysql" ]; then
-    mysql_install_db --user=mysql --datadir="$MYSQL_DATA_DIR" #check
+    mysql_install_db --user=mysql --datadir="$MYSQL_DATA_DIR"
 fi
 
 # Inicia MariaDB en segundo plano
-/usr/bin/mysqld_safe --datadir="$MYSQL_DATA_DIR" & #check
+/usr/bin/mysqld_safe --datadir="$MYSQL_DATA_DIR" &
 
 # Espera a que MariaDB esté listo
 until mysqladmin ping >/dev/null 2>&1; do
@@ -23,7 +23,7 @@ until mysqladmin ping >/dev/null 2>&1; do
 done
 
 
-mysql < /tmp/init_expanded.sql #check
+mysql < /tmp/init_expanded.sql
 
 # Detiene MariaDB
 mysqladmin shutdown

@@ -112,12 +112,5 @@ if ( ! defined( 'ABSPATH' ) ) {
 	define( 'ABSPATH', __DIR__ . '/' );
 }
 
-#$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
-#$domain   = getenv('DOMAIN_NAME') ?: 'localhost';
-#define('WP_HOME', $protocol . $domain);
-#define('WP_SITEURL', $protocol . $domain);
-
-
 /** Sets up WordPress vars and included files. */
 require_once ABSPATH . 'wp-settings.php';
-?>

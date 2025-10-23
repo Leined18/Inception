@@ -1,12 +1,11 @@
 #!/bin/bash
 
-set -e #detiene el script si encuentra un fallo.
-
-
+set -e
 
 if [ ! -f /var/www/html/wp-config.php ]; then
 	wp core download --allow-root
 fi
+
 
 cp /tmp/wp-config.php /var/www/html/wp-config.php
 echo "Config WordPress..."
@@ -41,13 +40,27 @@ else
 	fi
 fi
 
+chown -R www-data:www-data /var/www/html
+# Instala y activa el tema
+wp theme install astra --activate --allow-root
 
-# Ajustes PHP-FPM
+# Instala y activa plugins
+wp config set WP_REDIS_HOST redis --allow-root
+wp config set WP_REDIS_PORT 6379 --allow-root
+wp config set WP_CACHE_KEY_SALT $DOMAIN_NAME --allow-root
+wp config set WP_REDIS_CLIENT phpredis --allow-root
+wp plugin install redis-cache --activate --allow-root
+wp plugin update --all --allow-root
+
+# Habilita Redis Cache
+wp redis enable --allow-root
+
 sed -i 's/listen = \/run\/php\/php8.2-fpm.sock/listen = 9000/g' /etc/php/8.2/fpm/pool.d/www.conf
 sed -i 's/;clear_env = no/clear_env = no/' /etc/php/8.2/fpm/pool.d/www.conf
 mkdir -p /run/php
-chown -R www-data:www-data /var/www/html
-
 # Inicia PHP-FPM
 echo "Iniciando PHP-FPM..."
-exec php-fpm8.2 -F
+
+
+
+exec "$@"

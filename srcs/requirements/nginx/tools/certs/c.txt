@@ -1,0 +1,2 @@
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout requirements/nginx/tools/certs/nginx.key -out requirements/nginx/tools/certs/nginx.crt -subj "/C=ES/ST=Madrid/L=Madrid/O=MiEmpresa/OU=IT/CN=localhost"
+comando para generar el certificado.
