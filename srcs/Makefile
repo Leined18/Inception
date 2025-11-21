@@ -18,6 +18,7 @@ NGINX_CACHE_DIR := $(DATA_DIR)/nginx-cache
 all: build up
 
 prepare:
+	# Creates bind mount folders and aborts with guidance if permissions block it.
 	@mkdir -p $(DATA_DIR) 2>/dev/null || true
 	@if [ ! -d $(DATA_DIR) ]; then \
 		echo "DATA_DIR $(DATA_DIR) could not be created. Check the path in $(ENV_FILE)."; \
