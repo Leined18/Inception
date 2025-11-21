@@ -1,13 +1,12 @@
--- Crear base de datos si no existe
-CREATE DATABASE IF NOT EXISTS ${WP_DB};
+CREATE DATABASE IF NOT EXISTS `${DB_NAME}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-CREATE USER IF NOT EXISTS '${WP_USER}' IDENTIFIED BY '${WP_PASSWORD}';
+CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';
+GRANT ALL PRIVILEGES ON `${DB_NAME}`.* TO '${DB_USER}'@'%';
 
--- Crear el usuario ADMIN (si no existe) y darle una contraseña
-CREATE USER IF NOT EXISTS '${WP_ADMIN_USER}' IDENTIFIED BY '${WP_ADMIN_PASSWORD}';
+ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
+ALTER USER IF EXISTS 'root'@'127.0.0.1' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
+ALTER USER IF EXISTS 'root'@'::1' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
 
--- Otorgar privilegios completos al usuario ADMIN sobre todas las bases de datos
-GRANT ALL PRIVILEGES ON *.* TO '${WP_ADMIN_USER}'@'%' WITH GRANT OPTION;
+DELETE FROM mysql.user WHERE User='' OR (User='root' AND Host NOT IN ('localhost','127.0.0.1','::1'));
 
--- Aplicar cambios
 FLUSH PRIVILEGES;

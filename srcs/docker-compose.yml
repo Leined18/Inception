@@ -1,67 +1,85 @@
-#version: '3.1'
-
 services:
- nginx:
+  mariadb:
     build:
       context: .
-      dockerfile: ./requirements/nginx/Dockerfile
-    container_name: nginx
+      dockerfile: requirements/mariadb/Dockerfile
+    container_name: mariadb
     restart: always
-    env_file:
-      - ./.env
-    ports:
-      - "443:443"
+    environment:
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
-      - ${HOME}/data/wordpress:/var/www/html
-    depends_on:
-      wordpress:
-        condition: service_healthy
-        restart: true
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -uroot -p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - wordpress_network
- wordpress:
+
+  wordpress:
     build:
       context: .
-      dockerfile: ./requirements/wordpress/Dockerfile
+      dockerfile: requirements/wordpress/Dockerfile
     container_name: wordpress
     restart: always
     env_file:
-      - ./.env
+      - .env
+    depends_on:
+      mariadb:
+        condition: service_healthy
     volumes:
-      - ${HOME}/data/wordpress:/var/www/html
+      - wordpress_content:/var/www/html
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep php-fpm"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
       - wordpress_network
-    depends_on:
-      db: 
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "pgrep", "php-fpm"]
-      interval: 30s
-      retries: 3
-      start_period: 5s
-      timeout: 5s
-    # logging: # Configuración de logs
-    #   driver: "gelf"
-    #   options:
-    #     gelf-address: "udp://127.0.0.1:5044"
- db:
+
+  nginx:
     build:
       context: .
-      dockerfile: ./requirements/mariadb/Dockerfile
-    container_name: mariadb
+      dockerfile: requirements/nginx/Dockerfile
+    container_name: nginx
     restart: always
-    env_file:
-      - ./.env
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME}
+    depends_on:
+      wordpress:
+        condition: service_healthy
+    ports:
+      - "443:443"
+    volumes:
+      - wordpress_content:/var/www/html:ro
+      - nginx_cache:/var/cache/nginx
     networks:
       - wordpress_network
-    volumes:
-      - ${HOME}/data/mysql:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      retries: 5
 
 networks:
   wordpress_network:
-    name: wordpress_network
     driver: bridge
+
+volumes:
+  wordpress_content:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_DIR}/wordpress
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_DIR}/mariadb
+  nginx_cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_DIR}/nginx-cache
