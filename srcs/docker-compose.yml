@@ -19,7 +19,7 @@ services:
     networks:
       - wordpress_network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$(cat /run/secrets/db_root_password)"]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$(cat /run/secrets/db_root_password) || exit 1"]
       interval: 10s
       retries: 10
 
