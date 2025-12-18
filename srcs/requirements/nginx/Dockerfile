@@ -1,25 +1,24 @@
+# Usa debian:bookworm-slim como base
 FROM debian:bookworm-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        gettext-base \
-        nginx \
+# Instala Nginx y otras dependencias necesarias
+RUN apt-get update && apt-get install -y \
+    nginx \
     && rm -rf /var/lib/apt/lists/* \
     && ln -sf /dev/stdout /var/log/nginx/access.log \
-    && ln -sf /dev/stderr /var/log/nginx/error.log
+    && ln -sf /dev/stderr /var/log/nginx/error.log 
+
+
 
 # Copia los archivos de configuración personalizados
-COPY requirements/nginx/tools/nginx.conf /etc/nginx/nginx.conf
-COPY requirements/nginx/tools/default.conf /etc/nginx/templates/default.conf.tpl
-COPY requirements/nginx/tools/certs /etc/nginx/certs
-COPY requirements/nginx/tools/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY /requirements/nginx/tools/nginx.conf /etc/nginx/nginx.conf
+COPY /requirements/nginx/tools/default.conf /etc/nginx/conf.d/default.conf
+COPY /requirements/nginx/tools/certs /etc/nginx/certs
 
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
+# Expone el puerto 443 & 80
 EXPOSE 443
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-
+# Inicia Nginx en primer plano
 CMD ["nginx", "-g", "daemon off;"]
