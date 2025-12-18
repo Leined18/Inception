@@ -19,9 +19,10 @@ services:
     networks:
       - wordpress_network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$(cat /run/secrets/db_root_password)"]
       interval: 10s
-      retries: 5
+      retries: 10
+
 
   wordpress:
     image: wordpress:latest
