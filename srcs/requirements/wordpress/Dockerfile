@@ -16,8 +16,8 @@ RUN  curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cl
 
 
 
-COPY /requirements/wordpress/tools/wp-config.php /tmp/wp-config.php
-COPY /requirements/wordpress/tools/entrypoint.sh /entrypoint.sh
+COPY tools/wp-config.php /tmp/wp-config.php
+COPY tools/entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh
 

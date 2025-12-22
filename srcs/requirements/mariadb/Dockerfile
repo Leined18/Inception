@@ -12,9 +12,9 @@ RUN apt-get update && apt-get install -y \
 
 RUN apt-get update && apt-get install -y gettext-base
 
-COPY /requirements/mariadb/tools/init.sql /init.sql
-COPY /requirements/mariadb/tools/init.sh /usr/local/bin/
-COPY /requirements/mariadb/tools/50-server.cnf /etc/mysql/mariadb.conf.d/
+COPY tools/init.sql /init.sql
+COPY tools/init.sh /usr/local/bin/
+COPY tools/50-server.cnf /etc/mysql/mariadb.conf.d/
 
 RUN chmod +x /usr/local/bin/init.sh
 

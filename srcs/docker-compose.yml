@@ -3,7 +3,7 @@
 services:
 
   db:
-    image: mariadb:latest
+    build: ./requirements/mariadb
     container_name: mariadb
     restart: always
     env_file:
@@ -14,8 +14,10 @@ services:
       MYSQL_PASSWORD_FILE: /run/secrets/db_user_password
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
     volumes:
-      - ${HOME}/data/mysql:/var/lib/mysql
-      - secrets_volume:/run/secrets:ro   # Volumen compartido para contraseñas
+      - /home/danpalac/data/mysql:/var/lib/mysql
+    secrets:
+      - db_root_password
+      - db_user_password
     networks:
       - wordpress_network
     healthcheck:
@@ -25,7 +27,7 @@ services:
 
 
   wordpress:
-    image: wordpress:latest
+    build: ./requirements/wordpress
     container_name: wordpress
     restart: always
     env_file:
@@ -34,8 +36,10 @@ services:
       WORDPRESS_DB_PASSWORD_FILE: /run/secrets/db_user_password
       WORDPRESS_ADMIN_PASSWORD_FILE: /run/secrets/db_root_password
     volumes:
-      - ${HOME}/data/wordpress:/var/www/html
-      - secrets_volume:/run/secrets:ro   # Mismo volumen compartido
+      - /home/danpalac/data/wordpress:/var/www/html
+    secrets:
+      - db_user_password
+      - wp_admin_password
     networks:
       - wordpress_network
     depends_on:
@@ -49,7 +53,7 @@ services:
       timeout: 5s
 
   nginx:
-    image: nginx:latest
+    build: ./requirements/nginx
     container_name: nginx
     restart: always
     env_file:
@@ -57,7 +61,7 @@ services:
     ports:
       - "443:443"
     volumes:
-      - ${HOME}/data/wordpress:/var/www/html
+      - /home/danpalac/data/wordpress:/var/www/html
     networks:
       - wordpress_network
     depends_on:
@@ -66,12 +70,18 @@ services:
 
 # Volumen compartido para secretos
 volumes:
-  secrets_volume:
+  wordpress_data:
     driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ../secrets   # Monta la carpeta ./secrets del host
+  mysql_data:
+    driver: local
+
+secrets:
+  db_root_password:
+    file: ../secrets/db_root_password.txt
+  db_user_password:
+    file: ../secrets/db_password.txt
+  wp_admin_password:
+    file: ../secrets/db_password.txt
 
 networks:
   wordpress_network:

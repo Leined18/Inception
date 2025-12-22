@@ -1,2 +1,18 @@
 
-secrets/*
+# Secrets and sensitive data
+secrets/
+*.txt
+.env
+
+# Data directories
+data/
+
+# Docker volumes
+/home/danpalac/data/
+
+# Log files
+*.log
+
+# Backup files
+*.backup
+*.bak
