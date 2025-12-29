@@ -1,8 +1,15 @@
-
-
 #version: '3.9'
 
 services:
+
+  static:
+    build: ./requirements/static
+    container_name: static
+    restart: always
+    networks:
+      - inception_network
+    ports:
+      - "8080:80" 
 
   redis:
     build: ./requirements/redis
