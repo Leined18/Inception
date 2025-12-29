@@ -46,12 +46,20 @@ function renderProjects(list, container) {
   list.forEach(project => {
     const wrapper = document.createElement('div');
     wrapper.className = 'project-item';
-    wrapper.appendChild(createProjectButton(project));
+    // Solo usar menú desplegable si tiene subproyectos
     if (project.subprojects) {
+      const dropdown = document.createElement('div');
+      dropdown.className = 'dropdown';
+      const btn = createProjectButton(project);
+      btn.classList.add('dropdown-btn');
+      dropdown.appendChild(btn);
       const sublist = document.createElement('div');
-      sublist.className = 'subprojects';
+      sublist.className = 'dropdown-content';
       renderProjects(project.subprojects, sublist);
-      wrapper.appendChild(sublist);
+      dropdown.appendChild(sublist);
+      wrapper.appendChild(dropdown);
+    } else {
+      wrapper.appendChild(createProjectButton(project));
     }
     container.appendChild(wrapper);
   });
