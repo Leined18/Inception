@@ -64,8 +64,12 @@ define('NONCE_SALT',       get_salt('NONCE_SALT'));
 // -----------------
 define('WP_DEBUG', true);
 define('WP_ALLOW_REPAIR', true);
+
+// Configuración para usar Redis como cache de objetos en WordPress
+// El host 'redis' es el nombre del servicio en docker-compose.yml
 define('WP_REDIS_HOST', getenv('WP_REDIS_HOST') ?: 'redis');
 define('WP_REDIS_PORT', getenv('WP_REDIS_PORT') ?: 6379);
+// Habilita el uso de cache en WordPress
 define('WP_CACHE', true);
 
 // -----------------

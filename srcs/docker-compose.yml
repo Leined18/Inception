@@ -1,3 +1,13 @@
+# Servicio Redis (bonus): cache para WordPress
+  redis:
+    build: ./requirements/redis
+    container_name: redis
+    restart: always
+    networks:
+      - inception_network
+    # Redis no expone puertos al host, solo a la red interna de Docker
+    # No requiere volúmenes persistentes para este uso
+
 #version: '3.9'
 
 services:
@@ -67,6 +77,8 @@ services:
     depends_on:
       wordpress:
         condition: service_healthy
+      redis:
+        condition: service_started
 
 # Volumen compartido para secretos
 volumes:

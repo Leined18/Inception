@@ -19,6 +19,7 @@ wp core install \
     --allow-root
 echo "WordPress instalado correctamente."
 
+
 # Crear usuario normal si no existe
 USER_EXISTS=$(wp user get "$WP_USER" --field=user_login --allow-root 2>/dev/null || echo "no")
 EMAIL_EXISTS=$(wp user list --field=user_email --allow-root | grep -Fx "$WP_EMAIL" || echo "no")
@@ -32,6 +33,20 @@ if [ "$USER_EXISTS" = "no" ] && [ "$EMAIL_EXISTS" = "no" ]; then
 else
     echo "Usuario '$WP_USER' o correo '$WP_EMAIL' ya existe, omitiendo creación."
 fi
+
+# Instalar y activar el plugin Redis Object Cache automáticamente
+# Esto permite que WordPress use Redis como cache de objetos
+if ! wp plugin is-installed redis-cache --allow-root; then
+    wp plugin install redis-cache --activate --allow-root
+    echo "Plugin Redis Object Cache instalado y activado."
+else
+    wp plugin activate redis-cache --allow-root
+    echo "Plugin Redis Object Cache ya estaba instalado, activado."
+fi
+
+# Habilitar el cache de objetos en Redis desde WP-CLI
+wp redis enable --allow-root || true
+echo "Redis Object Cache habilitado en WordPress."
 
 # Ajustes PHP-FPM
 sed -i 's/listen = \/run\/php\/php8.2-fpm.sock/listen = 9000/g' /etc/php/8.2/fpm/pool.d/www.conf
