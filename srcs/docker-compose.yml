@@ -1,16 +1,15 @@
-# Servicio Redis (bonus): cache para WordPress
+
+
+#version: '3.9'
+
+services:
+
   redis:
     build: ./requirements/redis
     container_name: redis
     restart: always
     networks:
       - inception_network
-    # Redis no expone puertos al host, solo a la red interna de Docker
-    # No requiere volúmenes persistentes para este uso
-
-#version: '3.9'
-
-services:
 
   db:
     build: ./requirements/mariadb
