@@ -14,12 +14,12 @@ services:
       MYSQL_PASSWORD_FILE: /run/secrets/db_user_password
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
     volumes:
-      - /home/danpalac/data/mysql:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
     secrets:
       - db_root_password
       - db_user_password
     networks:
-      - wordpress_network
+      - inception_network
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$(cat /run/secrets/db_root_password) || exit 1"]
       interval: 10s
@@ -36,12 +36,12 @@ services:
       WORDPRESS_DB_PASSWORD_FILE: /run/secrets/db_user_password
       WORDPRESS_ADMIN_PASSWORD_FILE: /run/secrets/db_root_password
     volumes:
-      - /home/danpalac/data/wordpress:/var/www/html
+      - wordpress_data:/var/www/html
     secrets:
       - db_user_password
       - wp_admin_password
     networks:
-      - wordpress_network
+      - inception_network
     depends_on:
       db:
         condition: service_healthy
@@ -61,9 +61,9 @@ services:
     ports:
       - "443:443"
     volumes:
-      - /home/danpalac/data/wordpress:/var/www/html
+      - wordpress_data:/var/www/html
     networks:
-      - wordpress_network
+      - inception_network
     depends_on:
       wordpress:
         condition: service_healthy
@@ -84,6 +84,6 @@ secrets:
     file: ../secrets/db_password.txt
 
 networks:
-  wordpress_network:
-    name: wordpress_network
+  inception_network:
+    name: inception_network
     driver: bridge

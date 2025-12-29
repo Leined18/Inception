@@ -8,13 +8,20 @@ fi
 
 export DOMAIN_NAME
 
-# NGINX refuses to start without the TLS pair; fail early with a clear message.
-if [ ! -f "/etc/nginx/certs/${DOMAIN_NAME}/cert.pem" ] || [ ! -f "/etc/nginx/certs/${DOMAIN_NAME}/key.pem" ]; then
-	echo "TLS certificate pair not found under /etc/nginx/certs/${DOMAIN_NAME}." >&2
-	exit 1
+
+CERT_DIR="/etc/nginx/certs/${DOMAIN_NAME}"
+CERT_FILE="${CERT_DIR}/cert.pem"
+KEY_FILE="${CERT_DIR}/key.pem"
+
+if [ ! -f "$CERT_FILE" ] || [ ! -f "$KEY_FILE" ]; then
+	echo "Generating self-signed certificate for $DOMAIN_NAME"
+	mkdir -p "$CERT_DIR"
+	openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+		-keyout "$KEY_FILE" \
+		-out "$CERT_FILE" \
+		-subj "/C=FR/ST=Paris/L=Paris/O=42/OU=Student/CN=${DOMAIN_NAME}"
 fi
 
-# Renders the virtual host using the requested domain at runtime.
 envsubst '$DOMAIN_NAME' < /etc/nginx/templates/default.conf.tpl > /etc/nginx/conf.d/default.conf
 
 exec "$@"

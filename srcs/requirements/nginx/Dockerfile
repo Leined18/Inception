@@ -12,13 +12,18 @@ RUN apt-get update && apt-get install -y \
 
 
 
-# Copia los archivos de configuración personalizados
-COPY tools/nginx.conf /etc/nginx/nginx.conf
-COPY tools/default.conf /etc/nginx/conf.d/default.conf
-COPY tools/certs /etc/nginx/certs
 
-# Expone el puerto 443 & 80
+# Copia los archivos de configuración personalizados y plantilla
+COPY tools/nginx.conf /etc/nginx/nginx.conf
+COPY tools/default.conf.tpl /etc/nginx/templates/default.conf.tpl
+COPY tools/certs /etc/nginx/certs
+COPY tools/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+
+# Expone el puerto 443
 EXPOSE 443
 
-# Inicia Nginx en primer plano
+# Usa entrypoint personalizado
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]

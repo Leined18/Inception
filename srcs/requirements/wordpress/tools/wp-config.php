@@ -37,17 +37,27 @@ define('DB_HOST', getenv('DB_HOST') ?: 'db:3306');
 define('DB_CHARSET', 'utf8');
 define('DB_COLLATE', '');
 
+
 // -----------------
 // Authentication keys and salts
 // -----------------
-define('AUTH_KEY',         'put-your-unique-phrase-here');
-define('SECURE_AUTH_KEY',  'put-your-unique-phrase-here');
-define('LOGGED_IN_KEY',    'put-your-unique-phrase-here');
-define('NONCE_KEY',        'put-your-unique-phrase-here');
-define('AUTH_SALT',        'put-your-unique-phrase-here');
-define('SECURE_AUTH_SALT', 'put-your-unique-phrase-here');
-define('LOGGED_IN_SALT',   'put-your-unique-phrase-here');
-define('NONCE_SALT',       'put-your-unique-phrase-here');
+function get_salt($name) {
+    $env = getenv($name);
+    if ($env) return $env;
+    $file = "/run/secrets/$name";
+    if (file_exists($file)) return trim(file_get_contents($file));
+    if (function_exists('random_bytes')) return bin2hex(random_bytes(32));
+    return sha1(uniqid('', true));
+}
+
+define('AUTH_KEY',         get_salt('AUTH_KEY'));
+define('SECURE_AUTH_KEY',  get_salt('SECURE_AUTH_KEY'));
+define('LOGGED_IN_KEY',    get_salt('LOGGED_IN_KEY'));
+define('NONCE_KEY',        get_salt('NONCE_KEY'));
+define('AUTH_SALT',        get_salt('AUTH_SALT'));
+define('SECURE_AUTH_SALT', get_salt('SECURE_AUTH_SALT'));
+define('LOGGED_IN_SALT',   get_salt('LOGGED_IN_SALT'));
+define('NONCE_SALT',       get_salt('NONCE_SALT'));
 
 // -----------------
 // Debugging & caching
