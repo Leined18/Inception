@@ -32,48 +32,80 @@ This guide provides detailed instructions for developers working on the Inceptio
 ### Configuration Files Setup
 
 #### 1. Environment Variables (`srcs/.env`)
-Create and configure the environment file:
+Your actual configuration includes:
 ```bash
-DOMAIN_NAME=danpalac.42.fr
-
-# MySQL/MariaDB Configuration
-MYSQL_USER=wpuser
-MYSQL_DATABASE=wordpress
-MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_root_password
-MYSQL_PASSWORD_FILE=/run/secrets/db_password
+# Database Configuration
+DB_NAME=wp_db
+DB_USER=danpalac
+DB_ADMIN=siteowner42
+DB_HOST=db:3306
 
 # WordPress Configuration
-WORDPRESS_DB_HOST=mariadb:3306
-WORDPRESS_DB_NAME=wordpress
-WORDPRESS_DB_USER=wpuser
-WORDPRESS_DB_PASSWORD_FILE=/run/secrets/db_password
+WP_ADMIN_USER=${DB_ADMIN}
+WP_ADMIN_EMAIL=danpalac.Admin@gmail.com
+WP_USER=${DB_USER}
+WP_EMAIL=danpalac@gmail.com
+WP_DB=${DB_NAME}
+
+# MySQL Configuration
+MYSQL_USER=basic_user
+MYSQL_DATABASE=${DB_NAME}
+
+# Domain Configuration
+DOMAIN_NAME=danpalac.42.fr
+WP_TITLE=Inception
+
+# Data Directory
+DATA_DIR=/home/danpalac/data
 ```
 
 #### 2. Secrets Configuration
 Create the secrets directory and files:
 ```bash
-# Create secrets directory
+# Create secrets directory (required by subject)
 mkdir -p secrets
 
-# Database root password
+# Database root password (required by subject)
 echo "strong_root_password_123" > secrets/db_root_password.txt
 
-# WordPress database user password
+# WordPress database user password (required by subject)
 echo "strong_wp_password_456" > secrets/db_password.txt
 
-# WordPress admin credentials
+# WordPress admin credentials (required by subject)
+# IMPORTANT: Admin username MUST NOT contain "admin" or "Administrator"
 cat > secrets/credentials.txt << EOF
 WordPress Admin Credentials:
-Username: danpalac_admin
+Username: danpalac_wp
 Password: admin_secure_pass_789
 Email: admin@danpalac.42.fr
 EOF
 
-# Set proper permissions
+# Set proper permissions (required for security)
 chmod 600 secrets/*
 ```
 
-#### 3. SSL Certificates
+#### 3. Technical Restrictions (Subject Requirements)
+**Mandatory Requirements:**
+- ✅ Use environment variables via `.env` file
+- ✅ Use Docker secrets for sensitive data
+- ✅ Volumes accessible in `/home/danpalac/data/`
+- ✅ Only NGINX container exposes port 443
+- ✅ TLS 1.2/1.3 only
+
+**Prohibited Practices:**
+- ❌ Using `latest` tag in Dockerfiles
+- ❌ Passwords stored in Dockerfiles
+- ❌ Commands: `tail -f`, `sleep infinity`, `while true`
+- ❌ Network options: `network: host`, `--link`
+- ❌ Admin usernames containing "admin"/"Administrator"
+
+**Important Docker Best Practices:**
+- ✅ Proper PID 1 handling (no hacky patches)
+- ✅ Container restart policies for crash recovery
+- ✅ Daemon processes without infinite loops
+- ✅ Each service in dedicated container
+
+#### 4. SSL Certificates
 Generate self-signed certificates for NGINX:
 ```bash
 mkdir -p srcs/requirements/nginx/tools/certs/danpalac.42.fr
@@ -176,9 +208,13 @@ docker-compose -f srcs/docker-compose.yml logs --tail=100 nginx
 
 ## Volume Management
 
-### Data Persistence Locations
+### Data Persistence Locations (Subject Requirement)
+According to the subject, volumes must be accessible in:
+- **Host Directory**: `/home/danpalac/data/`
 - **Database Data**: `/home/danpalac/data/mariadb/`
 - **WordPress Files**: `/home/danpalac/data/wordpress/`
+
+*Note: The subject specifically states that volumes will be available in the `/home/login/data` folder of the host machine.*
 
 ### Volume Operations
 ```bash

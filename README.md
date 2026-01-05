@@ -11,45 +11,84 @@ This infrastructure simulates a real-world web application deployment scenario, 
 ## Instructions
 
 ### Prerequisites
-- Virtual Machine (required)
+- Virtual Machine (required by 42 subject)
 - Docker and Docker Compose installed
 - Make utility
+- Domain configuration: `danpalac.42.fr` pointing to localhost
 
 ### Setup and Execution
 1. Clone the repository and navigate to the project directory
-2. Configure your domain name to point to your local IP address (danpalac.42.fr)
-3. Set up environment variables in `srcs/.env` file
-4. Configure secrets in the `secrets/` directory
-5. Build and run the infrastructure:
+2. Configure environment variables and secrets:
+   ```bash
+   # Set up secrets directory with credentials
+   mkdir -p secrets
+   echo "your_root_password" > secrets/db_root_password.txt
+   echo "your_user_password" > secrets/db_password.txt
+   echo "admin_credentials_info" > secrets/credentials.txt
+   chmod 600 secrets/*
+   ```
+3. Configure domain in `/etc/hosts`:
+   ```bash
+   echo "127.0.0.1 danpalac.42.fr" | sudo tee -a /etc/hosts
+   ```
+4. Build and run the infrastructure:
    ```bash
    make
    ```
 
-### Project Structure
-```
-├── Makefile                 # Main build automation
-├── secrets/                 # Credentials and sensitive data
-│   ├── credentials.txt
-│   ├── db_password.txt
-│   └── db_root_password.txt
-└── srcs/                    # Source files
-    ├── docker-compose.yml   # Service orchestration
-    ├── .env                 # Environment variables
-    └── requirements/        # Service configurations
-        ├── mariadb/         # Database container
-        ├── nginx/           # Web server container
-        └── wordpress/       # WordPress container
-```
+### Accessing the Services
+- **Main Website**: https://danpalac.42.fr (WordPress site)
+- **WordPress Admin**: https://danpalac.42.fr/wp-admin
+- **Static Portfolio Site**: https://danpalac.42.fr/static/ (bonus service)
+- **Redis Integration**: Visible through WordPress performance improvements
 
-### Services
-- **NGINX**: Web server with TLS 1.2/1.3, acts as reverse proxy (port 443)
-- **WordPress**: Content management system with PHP-FPM
-- **MariaDB**: Database server for WordPress
+## Project Design Choices
 
-### Volumes
-- WordPress database volume (`/home/{user}/data`)
-- WordPress website files volume
+### Docker Architecture
+This project uses Docker containerization with the following design decisions:
 
+#### Virtual Machines vs Docker
+- **Virtual Machines**: Complete OS virtualization with full isolation but higher resource overhead
+- **Docker** (chosen): Container-based virtualization providing:
+  - Lightweight resource usage compared to VMs
+  - Faster startup and deployment times
+  - Better scalability and portability
+  - Process-level isolation sufficient for web services
+  - Easier development and production parity
+
+#### Secrets vs Environment Variables
+- **Environment Variables**: Used for non-sensitive configuration (domain names, service endpoints, ports)
+- **Docker Secrets** (implemented): Used for sensitive data:
+  - Database passwords stored in `secrets/` directory
+  - Mounted as files in containers at `/run/secrets/`
+  - Not exposed in process environment or logs
+  - Proper file permissions (600) for security
+  - Git-ignored to prevent credential exposure
+
+#### Docker Network vs Host Network
+- **Docker Bridge Network** (implemented): Custom network `inception_network` providing:
+  - Service isolation and segmentation
+  - DNS-based service discovery between containers
+  - Port isolation from host system
+  - Security through network policies
+  - Container-to-container communication without exposing internal ports
+
+#### Docker Volumes vs Bind Mounts
+- **Docker Named Volumes** (chosen): Used for persistent data:
+  - Database storage: `mysql_data` volume
+  - WordPress files: `wordpress_data` volume
+  - Managed by Docker with automatic cleanup
+  - Better performance and portability
+  - Easier backup and migration strategies
+
+### Service Architecture
+The infrastructure consists of:
+
+- **NGINX**: Reverse proxy with TLS termination (only port 443 exposed)
+- **WordPress**: PHP-FPM application server (internal communication)
+- **MariaDB**: Database server with persistent storage
+- **Redis**: Caching layer for WordPress (bonus service)
+- **Static Site**: Portfolio website served via separate container
 ## Resources
 
 ### Documentation
@@ -60,17 +99,17 @@ This infrastructure simulates a real-world web application deployment scenario, 
 - [MariaDB Documentation](https://mariadb.org/documentation/)
 
 ### AI Usage
-AI was used throughout this project for:
-- **Dockerfile optimization**: Generating and reviewing Dockerfiles following best practices (multi-stage builds, security hardening, Alpine base images)
-- **docker-compose.yml configuration**: Structuring service definitions, network configuration, and volume management
-- **Shell script automation**: Creating initialization scripts for services (database setup, WordPress configuration)
-- **Documentation generation**: Drafting README files, user guides, and technical documentation
-- **Troubleshooting**: Debugging container connectivity issues and service configuration problems
-- **Security review**: Analyzing configurations for security vulnerabilities and implementing best practices
+AI tools were utilized throughout this project for:
 
-All AI-generated content was thoroughly reviewed, tested, and modified to ensure correctness and adherence to project requirements.
+- **Infrastructure Design**: Architecting the multi-container setup and service communication patterns
+- **Dockerfile Optimization**: Creating secure, efficient container builds following best practices
+- **Configuration Management**: Generating and reviewing NGINX, PHP-FPM, and MariaDB configurations
+- **Security Implementation**: Implementing TLS configuration, secrets management, and container hardening
+- **Automation Scripts**: Creating initialization scripts for database setup and WordPress configuration
+- **Documentation**: Generating comprehensive user and developer documentation
+- **Troubleshooting**: Debugging container networking, volume mounting, and service dependency issues
 
-## Project Design Choices
+All AI-generated content was thoroughly tested, validated, and adapted to meet project requirements and security standards.
 
 ### Virtual Machines vs Docker
 - **Virtual Machines**: Full OS virtualization with complete isolation but higher resource overhead

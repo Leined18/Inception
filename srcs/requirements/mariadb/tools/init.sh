@@ -6,7 +6,7 @@ MYSQL_DATA_DIR=/var/lib/mysql
 # Variables desde .env
 DB_NAME=${DB_NAME:-wp_db}
 DB_USER=${DB_USER:-danpalac}
-DB_ADMIN=${DB_ADMIN:-Adanpalac}
+DB_ADMIN=${DB_ADMIN:-siteowner42}
 
 # Leer contraseñas desde secrets
 DB_PASSWORD=$(cat /run/secrets/db_user_password)

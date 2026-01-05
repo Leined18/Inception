@@ -8,8 +8,7 @@ services:
     restart: always
     networks:
       - inception_network
-    ports:
-      - "8080:80" 
+    # NO PORTS - must be accessed only through NGINX 
 
   redis:
     build: ./requirements/redis
